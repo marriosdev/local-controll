@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Touchpad em Tempo Real</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      height: 100%;
+      overflow: hidden;
+      color: #0f0;
+      font-family: monospace;
+    }
+    #touchpad {
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="touchpad"></div>
+<div id="info">Conectando...</div>
+
+<script>
+  const ws = new WebSocket("ws://{{.ServerIp}}:8080/ws");
+  const info = document.getElementById('info');
+
+  ws.onopen = () => {
+    info.innerText = "Conectado!";
+  };
+
+  ws.onerror = (err) => {
+    info.innerText = "Erro de conexão.";
+    console.error(err);
+  };
+
+  const touchpad = document.getElementById("touchpad");
+
+  touchpad.addEventListener("touchmove", e => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+
+    ws.send(JSON.stringify({ x, y }));
+    info.innerHTML = `X: ${x}<br>Y: ${y}`;
+  }, { passive: false });
+</script>
+
+</body>
+</html>
